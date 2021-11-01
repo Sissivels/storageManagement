@@ -1,0 +1,177 @@
+CREATE DATABASE schneider;
+USE schneider;
+
+CREATE TABLE mitarbeiter(ma_id INT PRIMARY KEY AUTO_INCREMENT,
+vorname varchar (20), name VARCHAR (20));
+
+CREATE TABLE schneider (login_user VARCHAR(10) PRIMARY KEY, gin
+ma_id int (11),
+pass_word  varchar (20),
+FOREIGN KEY (ma_id) REFERENCES mitarbeiter(ma_id));
+
+CREATE TABLE lieferanten (lief_id  INT  PRIMARY KEY AUTO_INCREMENT,
+firma VARCHAR(100),
+adresse VARCHAR (100),
+telefon INT,
+email VARCHAR (100),
+lieferzeit int);
+
+CREATE TABLE art_type (
+type_id INT AUTO_INCREMENT PRIMARY KEY,
+bezeichnung VARCHAR (100));
+
+CREATE TABLE ARTIKEL (art_id INT PRIMARY KEY AUTO_INCREMENT,
+bezeichnung VARCHAR(100),
+ist_menge INT,
+meldebestand INT,
+max_menge INT,
+gebindemenge INT,
+lief_id INT,
+type_id INT,
+FOREIGN KEY (lief_id) REFERENCES lieferanten(lief_id),
+FOREIGN KEY (type_id) REFERENCES art_type(type_id));
+
+CREATE TABLE Bestellung (bestellung_id INT PRIMARY KEY AUTO_INCREMENT,
+login_user VARCHAR(10),
+art_id INT,
+bestell_menge INT,
+datum DATE DEFAULT (CURRENT_DATE),
+FOREIGN KEY (login_user) REFERENCES schneider(login_user),
+FOREIGN KEY(art_id) REFERENCES artikel(art_id));
+
+CREATE TABLE kontakt (kontakt_id INT PRIMARY KEY AUTO_INCREMENT,
+lief_id INT,
+vorname VARCHAR (20),
+name VARCHAR (50),
+telefon INT,
+kontakt_email VARCHAR(100),
+stellung VARCHAR(50),
+FOREIGN KEY (lief_id) REFERENCES lieferanten(lief_id));
+
+CREATE TABLE preis(
+id int PRIMARY KEY AUTO_INCREMENT,
+lief_id INT,
+art_id INT,
+min_menge INT,
+max_mengge INT,
+preis DECIMAL(8,2),                                                    
+FOREIGN KEY (lief_id) REFERENCES lieferanten(lief_id),
+FOREIGN KEY (art_id) REFERENCES artikel(art_id));
+
+ CREATE TABLE stat(Artikelanzahl INT, Lieferantenanzahl INT);  
+
+CREATE TABLE art_hinzufuegen(
+id INT  PRIMARY KEY AUTO_INCREMENT,
+datum DATE DEFAULT (CURRENT_DATE),
+art_id INT,
+menge INT,
+FOREIGN KEY (art_id) REFERENCES artikel(art_id));
+
+CREATE TABLE notbestand (Art_id INT,Lief_id INT);
+
+CREATE TABLE art_heraus
+(id INT PRIMARY KEY AUTO_INCREMENT,
+art_id INT,
+menge INT,
+datum DATE DEFAULT (CURRENT_DATE),
+FOREIGN KEY(art_id) REFERENCES artikel(art_id));
+
+CREATE TRIGGER stat_after_artikel_insert
+AFTER INSERT ON artikel
+FOR EACH ROW
+UPDATE stat SET artikelanzahl = artikelanzahl + 1;
+
+CREATE TRIGGER stat_after_artikel_delete
+AFTER DELETE ON artikel
+FOR EACH ROW
+UPDATE stat SET artikelanzahl = artikelanzahl - 1; 
+
+CREATE TRIGGER stat_after_lieferanten_insert
+AFTER INSERT ON lieferanten
+FOR EACH ROW
+UPDATE stat SET Lieferantenanzahl = Lieferantenanzahl + 1;  
+
+CREATE TRIGGER stat_after_lieferanten_delete
+AFTER DELETE ON lieferanten
+FOR EACH ROW
+UPDATE stat SET Lieferantenanzahl = Lieferantenanzahl - 1; 
+
+INSERT INTO stat VALUES(0,0);
+INSERT INTO mitarbeiter (ma_id, vorname, name) VALUES (1,"Klaus", "Mueller"),
+(2,"Beatrice","Richter"),(3,"Kurt", "Helmig"),(4,"Helga", "Schneider");
+
+INSERT INTO schneider (login_user, ma_id, pass_word) VALUES
+("prototype",1,"Proto%typ01"),i
+("richter_B_002",2,"Beisp_iel%2;"),
+("Helmig_K_003",3,"Beisp_iel%3;"),
+("Schneider_H_004",4,"Beisp_iel%4;");
+
+INSERT INTO lieferanten (lief_id, firma, adresse, telefon,email, lieferzeit) VALUES 
+(1,'Metromark','Steinstr. 1 , 12345, Musterstadt',00001234,'metromark@muster-email',5),
+(2,'Extramarkt','Hauptstr. 1 , 12347, Musterstadt',00001235,'varmetromark@muster-email',5),
+(3,'gunstigmarkt','muellerstr. 1 , 12387, Musterstadt',00001236,'gunstigmarkt@muster-email',5),
+(4,'rapidmarkt','muellerstr.1, 12387, Musterstadt', 00001237,'gunstigmarkt@muster-email',8);
+
+INSERT INTO art_type(bezeichnung) VALUES("Getraenke"),("Snacks"),("Alkoholische Getraenke");
+
+INSERT INTO artikel (art_id, bezeichnung, ist_menge, meldebestand, max_menge, gebindemenge, lief_id, type_id)
+VALUES(1,"Coca Cola 330 ml Dose",480,240,1200,24,1,1),
+(2,"Coca Cola  330 ml Dose",480,240,1200,24,2,1),
+(3,"Tasty Bier 330ml Dose",101,100,200,24,1,3),
+(4,"Tropical Sun Cassava Chips 0,08 K, 23", 230,24,240,24,4,2),
+(5,"High Five Bier",250,240,1200,24,3,3),
+(6, "Potato Chips hot",14,10,20,20,1,2),
+(7,"Pure drops Wasser- Still, 500ml",27,25,50,12,3,1);
+
+INSERT INTO art_heraus (art_id,menge) VALUES(3,2);
+
+INSERT INTO bestellung (art_id,bestell_menge)VALUES(3,10);
+
+INSERT INTO kontakt (lief_id, vorname, name, telefon, kontakt_email, stellung)
+ VALUES 
+(1,"Hans","Schmidt",00012456643,"schmidt_hans@muster-email.de","Verkaufer"),
+(2, "Martin","Koch",01455555526,"koch_martin@muster-email.de","Verkaufer"),
+(3, "Andreas","Bauer",454782526,"abauer@muter-email.de","Verkaufer"),
+(4, "Julia","Braun",145763336,"jb_juliabraun@muster-email.de","Verkaufer");
+
+INSERT INTO lieferanten (lief_id, firma, adresse, telefon,email, lieferzeit) 
+VALUES 
+(005,'drinks&snacks','Steinstr. 1 , 12345, Musterstadt',0000123456,'drinks_snacksk@muster-email',5);
+
+INSERT INTO bestellung 
+(login_user,art_id,bestell_menge) VALUES("Helmig_K_0",5,2);
+
+INSERT INTO preis(lief_id,art_id,min_menge,max_menge,preis) VALUES(1,1,1,10,16.50),
+(2,2,1,10,15.50),(5,6,1,10,8.50),(1,1,11,20,15),(1,1,21,30,14.50),
+(2,2,21,30,13.50),(3,7,1,5,5),(3,7,6,10,4.50);
+
+CREATE TRIGGER art_after_art_heraus_insert
+AFTER INSERT ON art_heraus
+FOR EACH ROW
+UPDATE artikel SET ist_menge = ist_menge - new.menge
+WHERE art_id = new.art_id;  
+
+CREATE TRIGGER art_after_art_hinzufuegen_insert
+AFTER INSERT ON art_hinzufuegen
+FOR EACH ROW
+UPDATE artikel SET ist_menge = ist_menge + new.menge
+WHERE art_id = new.art_id;
+
+CREATE TRIGGER notbestand_after_bestellung_insert
+AFTER INSERT ON bestellung
+FOR EACH ROW
+DELETE FROM notbestand WHERE art_id = new.art_id;
+
+DELIMITER //
+
+CREATE TRIGGER not_after_art_update
+    AFTER UPDATE ON artikel
+    For EACH ROW 
+    BEGIN
+    IF NEW.ist_menge <= old.meldebestand THEN                  
+    INSERT INTO notbestand (art_ID) VALUES(NEW.art_id);
+    END IF;
+END; //
+
+DELIMITER ;
+
